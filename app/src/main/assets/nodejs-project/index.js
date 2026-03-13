@@ -20,9 +20,21 @@ io.on('connection', (socket) => {
 
     socket.on('start_pairing_process', async (phoneNumber) => {
         console.log('Starting pairing process for number:', phoneNumber);
-        // Implement pairing code logic here
-        // For now, just emit a dummy pairing code
-        socket.emit('pairing_code_emit', '123-456-789');
+        if (!sock) {
+            console.log('WhatsApp socket not initialized.');
+            socket.emit('error', 'WhatsApp socket not initialized.');
+            return;
+        }
+        const cleanedPhoneNumber = phoneNumber.replace(/\D/g, '');
+        console.log('Solicitando código para:', cleanedPhoneNumber);
+        try {
+            const { code } = await sock.requestPairingCode(cleanedPhoneNumber);
+            console.log('Código de pareamento enviado:', code);
+            socket.emit('pairing_code_emit', code);
+        } catch (error) {
+            console.error('Erro ao solicitar código de pareamento:', error);
+            socket.emit('error', `Erro ao solicitar código de pareamento: ${error.message}`);
+        }
     });
 
     socket.on('shutdown_bot', async () => {
@@ -38,12 +50,14 @@ server.listen(PORT, () => {
     console.log(`Socket.io server listening on port ${PORT}`);
 });
 
+let sock;
+
 async function connectToWhatsApp() {
     const { state, saveCreds } = await useMultiFileAuthState('baileys_auth_info');
     const { version, is}; = await fetchLatestBaileysVersion();
     console.log(`using Baileys v${version.join('.')}`);
 
-    const sock = makeWASocket({
+    sock = makeWASocket({
         version,
         logger: console,
         printQRInTerminal: false,

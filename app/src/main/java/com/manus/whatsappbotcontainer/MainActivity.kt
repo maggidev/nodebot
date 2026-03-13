@@ -93,6 +93,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupSocket() {
         try {
+            // Se o servidor Node.js estiver em um dispositivo diferente, substitua "localhost" pelo IP da sua rede Wi-Fi (ex: "http://192.168.1.15:3000")
             mSocket = IO.socket("http://localhost:3000")
         } catch (e: URISyntaxException) {
             e.printStackTrace()
@@ -120,6 +121,14 @@ class MainActivity : AppCompatActivity() {
                 val status = args[0] as String
                 statusText.text = "Status: $status"
                 addLog("Status da conexão: $status")
+            }
+        }
+
+        mSocket?.on("error") { args ->
+            runOnUiThread {
+                val errorMessage = args[0] as String
+                addLog("Erro do servidor: $errorMessage")
+                statusText.text = "Erro: $errorMessage"
             }
         }
 

@@ -13,7 +13,8 @@
         android:icon="@android:mipmap/sym_def_app_icon"
         android:roundIcon="@android:mipmap/sym_def_app_icon"
         android:supportsRtl="true"
-        android:theme="@style/Theme.WhatsappBotContainer">
+        android:theme="@style/Theme.WhatsappBotContainer"
+        android:usesCleartextTraffic="true">
         
         <activity
             android:name=".MainActivity"
