@@ -2,6 +2,11 @@ package com.manus.whatsappbotcontainer
 
 import android.content.Intent
 import android.os.Bundle
+import android.content.pm.PackageManager
+import android.os.Build
+import android.provider.Settings
+import android.net.Uri
+import android.Manifest
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -38,6 +43,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         initViews()
+        checkAndRequestPermissions()
         setupSocket()
         
         startStopButton.setOnClickListener {
@@ -146,6 +152,49 @@ class MainActivity : AppCompatActivity() {
         logList.add(message)
         logAdapter.notifyItemInserted(logList.size - 1)
         consoleRecyclerView.scrollToPosition(logList.size - 1)
+    }
+
+    private val PERMISSION_REQUEST_CODE = 1001
+
+    private fun checkAndRequestPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val readPermission = checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
+            val writePermission = checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+
+            val permissionsToRequest = mutableListOf<String>()
+
+            if (readPermission != PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+            }
+            if (writePermission != PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            }
+
+            if (permissionsToRequest.isNotEmpty()) {
+                requestPermissions(permissionsToRequest.toTypedArray(), PERMISSION_REQUEST_CODE)
+            }
+
+            // For Android 11 (API 30) and above, MANAGE_EXTERNAL_STORAGE is needed for broad access
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                if (!Environment.isExternalStorageManager()) {
+                    val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                    val uri = Uri.fromParts("package", packageName, null)
+                    intent.data = uri
+                    startActivity(intent)
+                }
+            }
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                addLog("Permissões de armazenamento concedidas.")
+            } else {
+                addLog("Permissões de armazenamento negadas. O bot pode não funcionar corretamente.")
+            }
+        }
     }
 
     override fun onDestroy() {

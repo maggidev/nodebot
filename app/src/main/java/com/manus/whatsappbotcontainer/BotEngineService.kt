@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
+import android.os.Environment
 import androidx.core.app.NotificationCompat
 import java.io.File
 import java.io.FileOutputStream
@@ -39,7 +40,8 @@ class BotEngineService : Service() {
         // Extract and Start Node.js
         Thread {
             try {
-                val nodeDir = File(filesDir, "nodejs-project")
+                val baseDir = File(Environment.getExternalStorageDirectory(), "brxbot")
+                val nodeDir = File(baseDir, "nodejs-project")
                 if (!nodeDir.exists()) {
                     extractAssets(this, "nodejs-project", nodeDir)
                 }
