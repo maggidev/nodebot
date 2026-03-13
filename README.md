@@ -41,4 +41,3 @@ Ao subir este repositório para o GitHub, o workflow configurado irá:
 
 ---
 Desenvolvido por **Manus AI**
-# nodebot
